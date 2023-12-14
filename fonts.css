@@ -1,0 +1,41 @@
+@font-face {
+    font-family: 'Open Sans';
+    src: url('./fonts/OpenSans-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('./fonts/OpenSans-ExtraBold.ttf') format('truetype');
+    font-weight: 800; /* ExtraBold is often 800 */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('./fonts/OpenSans-Light.ttf') format('truetype');
+    font-weight: 300; /* Light is typically 300 */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('./fonts/OpenSans-Medium.ttf') format('truetype');
+    font-weight: 500; /* Medium is generally 500 */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('./fonts/OpenSans-Regular.ttf') format('truetype');
+    font-weight: normal; /* Regular is typically 400 */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('./fonts/OpenSans-SemiBold.ttf') format('truetype');
+    font-weight: 600; /* SemiBold usually corresponds to 600 */
+    font-style: normal;
+}
