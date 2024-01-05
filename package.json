@@ -1,6 +1,6 @@
 {
   "name": "TimeTrack",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tracks time spent in applications.",
   "main": "main.js",
   "author": "Justin Szczurowski <justin.szczurowski@gmail.com>",
@@ -8,12 +8,15 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "win-portable": "electron-builder build --win portable",
+    "mac": "electron-builder build --mac"
   },
   "build": {
     "appId": "com.bosscube.timetrack",
     "mac": {
-      "category": "",
+      "target": "dmg",
+      "category": "public.app-category.productivity",
       "icon": "images/icon.icns"
     },
     "win": {
@@ -22,7 +25,8 @@
     }
   },
   "dependencies": {
-    "active-win": "^8.1.1"
+    "active-win": "^8.1.1",
+    "yarn": "^1.22.21"
   },
   "devDependencies": {
     "electron": "^28.0.0",
