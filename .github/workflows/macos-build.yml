@@ -1,23 +1,26 @@
-name: Build Electron App on macOS
-
+name: Build
 on: [push]
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+        
     steps:
-    - name: Check out Git repository
-      uses: actions/checkout@v2
-
-    - name: Install Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: 16.15.0
-
-    - name: Install Dependencies
-      run: |
-        npm install
-
-    - name: Build the Electron App
-      run: |
-        npm run dist -- --mac
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+  
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.15.0
+  
+      - name: Install Dependencies
+        run: |
+          npm install
+  
+      - name: Build Electron App
+        run: |
+          npm run dist -- --mac
