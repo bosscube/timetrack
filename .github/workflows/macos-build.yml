@@ -6,7 +6,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [macos-12, windows-latest]
+        os: [macos-12]
         
     steps:
       - name: Check out Git repository
@@ -20,10 +20,6 @@ jobs:
       - name: Install Dependencies
         run: |
           npm install
-          
-      - name: Rebuild Native Modules for Electron
-        run: |
-          npx electron-build
           
       - name: Build Electron App
         run: |
