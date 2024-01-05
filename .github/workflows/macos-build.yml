@@ -23,7 +23,7 @@ jobs:
           
       - name: Rebuild Native Modules for Electron
         run: |
-          $(npm bin)/electron-rebuild
+          npx electron-build
           
       - name: Build Electron App
         run: |
