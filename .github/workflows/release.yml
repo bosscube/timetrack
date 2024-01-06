@@ -30,13 +30,13 @@ jobs:
 
       - name: Build Electron App for Windows
         if: matrix.os == 'windows-latest'
-        run: npm run electron-builder build --win portable
+        run: npm run win-portable
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Build Electron App for macOS
         if: matrix.os == 'macos-12'
-        run: npm run electron-builder build --mac
+        run: npm run mac
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
