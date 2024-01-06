@@ -17,11 +17,13 @@
     "mac": {
       "target": "dmg",
       "category": "public.app-category.productivity",
-      "icon": "images/icon.icns"
+      "icon": "images/icon.icns",
+      "artifactName": "TimeTrack.dmg"
     },
     "win": {
       "target": "nsis",
-      "icon": "images/icon.ico"
+      "icon": "images/icon.ico",
+      "artifactName": "TimeTrack.exe"
     }
   },
   "dependencies": {
