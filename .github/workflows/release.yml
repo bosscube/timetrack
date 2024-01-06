@@ -39,6 +39,19 @@ jobs:
         id: extract_branch
         run: echo ::set-output name=version::$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
         
+      - name: Print GITHUB_REF
+        run: echo "GITHUB_REF: $GITHUB_REF"
+
+      - name: Extract Release Version
+        id: extract_version
+        run: |
+          VERSION=$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
+          echo "Extracted Version: $VERSION"
+          echo ::set-output name=version::$VERSION
+
+      - name: Print Extracted Version
+        run: echo "Extracted Version: ${{ steps.extract_version.outputs.version }}"
+
       - name: Create Release
         if: startsWith(github.ref, 'refs/heads/releases/')
         id: create_release
