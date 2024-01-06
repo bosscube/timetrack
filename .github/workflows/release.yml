@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - releases/*
 
 jobs:
   build:
@@ -36,13 +36,14 @@ jobs:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
 
       - name: Create Release
+        if: startsWith(github.ref, 'refs/heads/releases/')
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
         with:
           tag_name: ${{github.ref}}
-          release_name: Release ${{github.ref}}
+          release_name: ${{github.ref}}
           draft: false
           prerelease: false
 
