@@ -31,7 +31,7 @@ jobs:
           
       - name: Build Electron App
         run: |
-          npm run dist -- --mac
+          npm run dist
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
 
