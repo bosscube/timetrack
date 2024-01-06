@@ -34,7 +34,11 @@ jobs:
           npm run dist
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
-
+          
+      - name: Extract Branch Name
+        id: extract_branch
+        run: echo ::set-output name=version::$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
+        
       - name: Create Release
         if: startsWith(github.ref, 'refs/heads/releases/')
         id: create_release
@@ -42,8 +46,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
         with:
-          tag_name: ${{github.ref}}
-          release_name: ${{github.ref}}
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: ${{ steps.extract_version.outputs.version }}
           draft: false
           prerelease: false
 
