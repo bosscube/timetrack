@@ -1,5 +1,5 @@
 (async () => {
-    const { $, $$, formatTime, loadSettings, saveSettings, serializeForm, toast } = window.helpers;
+    const { $, $$, formatTime, loadSettings, saveSettings, serializeForm, slug, toast } = window.helpers;
     const windowsEl = $('#windows');
     const lens = $('.lens');
     const settings = await loadSettings();
@@ -82,10 +82,10 @@
         if (!windowsEl.innerText) {
             // Initial render
             const output = Object.entries(grouped).map(([process, items]) => {
-                const processSlug = process.toLowerCase().replace(/\s+/g, '-');
+                const processSlug = slug(process);
 
-                return `<li id="group-${processSlug}" class="group expanded"><div class="controls"><button class="remove">&times;</button></div><div class="content"><label for="group-${processSlug}">${process} <span id="group-${processSlug}-count" class="group-count">${items.length}</span><span id="group-${processSlug}-total" class="group-total"></span></label></div><ul class="instances">` + items.map(data => {
-                    return `<li id="${data.id}" data-group-id="group-${processSlug}"><div class="controls"><button class="remove">&times;</button></div><div class="content"><img src="${data.icon || './images/icon-default.png'}" class="icon">${data.title}: <span class="active-time">${formatTime(data.activeTime).shortFormat}</span></div></li>`;
+                return `<li id="group-${processSlug}" class="group"><div class="controls"><button class="remove">&times;</button></div><div class="content"><label for="group-${processSlug}"><img src="${items[0].icon || './images/icon-default.png'}" class="icon">${process} <span id="group-${processSlug}-count" class="group-count">${items.length}</span><span id="group-${processSlug}-total" class="group-total"></span></label></div><ul class="instances">` + items.map(data => {
+                    return `<li id="${data.id}" data-group-id="group-${processSlug}"><div class="controls"><button class="remove">&times;</button></div><div class="content">${data.title}: <span class="active-time">${formatTime(data.activeTime).shortFormat}</span></div></li>`;
                 }).join('\n') + '</ul></li>';
             });
 
@@ -110,38 +110,42 @@
 
             Object.values(windows).forEach(data => {
                 const { activeTime, icon, id, process, title } = data;
-                const processSlug = process.toLowerCase().replace(/\s+/g, '-');
+                const processSlug = slug(process);
                 let item = $(`#${id}`);
 
-                if (!item) {
-                    // Does the group exist?
-                    let group = $(`#group-${processSlug}`);
+                try {
+                    if (!item) {
+                        // Does the group exist?
+                        let group = $(`#group-${processSlug}`);
 
-                    if (!group) {
-                        group = document.createElement('li');
-                        group.id = `group-${processSlug}`;
-                        group.className = 'group expanded';
-                        group.innerHTML = `<div class="controls"><button class="remove">&times;</button></div><div class="content"><label for="group-${processSlug}">${process} <span id="group-${processSlug}-count" class="group-count">1</span><span id="group-${processSlug}-total" class="group-total"></span></label></div><ul class="instances"></ul>`;
-                        windowsEl.append(group);
+                        if (!group) {
+                            group = document.createElement('li');
+                            group.id = `group-${processSlug}`;
+                            group.className = 'group'; // expanded
+                            group.innerHTML = `<div class="controls"><button class="remove">&times;</button></div><div class="content"><label for="group-${processSlug}"><img src="${icon || './images/icon-default.png'}" class="icon">${process} <span id="group-${processSlug}-count" class="group-count">1</span><span id="group-${processSlug}-total" class="group-total"></span></label></div><ul class="instances"></ul>`;
+                            windowsEl.append(group);
+                        } else {
+                            // Update item count
+                            $(`#group-${processSlug}-count`).textContent = grouped[process].length;
+                        }
+
+                        item = document.createElement('li');
+                        item.id = id;
+                        item.dataset.groupId = `group-${processSlug}`;
+                        item.innerHTML = `<div class="controls"><button class="remove">&times;</button></div><div class="content">${title}: <span class="active-time">${formatTime(activeTime).shortFormat}</span></div>`;
+                        $('.instances', group).append(item);
                     } else {
-                        // Update item count
+                        // Update active time
+                        $('.active-time', item).textContent = formatTime(data.activeTime).shortFormat;
+
+                        // Update item counts
                         $(`#group-${processSlug}-count`).textContent = grouped[process].length;
+
+                        // Update total time
+                        $(`#group-${processSlug}-total`).textContent = formatTime(grouped[process].reduce((result, win) => result + win.activeTime, 0)).shortFormat;
                     }
-
-                    item = document.createElement('li');
-                    item.id = id;
-                    item.dataset.groupId = `group-${processSlug}`;
-                    item.innerHTML = `<div class="controls"><button class="remove">&times;</button></div><div class="content"><img src="${icon || './images/icon-default.png'}" class="icon">${title}: <span class="active-time">${formatTime(activeTime).shortFormat}</span></div>`;
-                    $('.instances', group).append(item);
-                } else {
-                    // Update active time
-                    $('.active-time', item).textContent = formatTime(data.activeTime).shortFormat;
-
-                    // Update item counts
-                    $(`#group-${processSlug}-count`).textContent = grouped[process].length;
-
-                    // Update total time
-                    $(`#group-${processSlug}-total`).textContent = formatTime(grouped[process].reduce((result, win) => result + win.activeTime, 0)).shortFormat;
+                } catch(e) {
+                    console.error(processSlug, e.stack);
                 }
             });
         }
