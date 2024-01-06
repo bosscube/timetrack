@@ -1,0 +1,57 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-12]
+        
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+  
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16.15.0
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+  
+      - name: Install Dependencies
+        run: |
+          npm install
+          
+      - name: Build Electron App
+        run: |
+          npm run dist -- --mac
+        env:
+          GH_TOKEN: ${{secrets.GH_TOKEN}}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+        with:
+          tag_name: ${{github.ref}}
+          release_name: Release ${{github.ref}}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+        with:
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_path: ./dist/TimeTrack.dmg
+          asset_name: TimeTrack.dmg
+          asset_content_type: application/x-dmg
