@@ -27,16 +27,21 @@ jobs:
   
       - name: Install Dependencies
         run: npm install
-          
-      - name: Build Electron App
-        run: npm run dist
+
+      - name: Build Electron App for Windows
+        if: matrix.os == 'windows-latest'
+        run: npm run electron-builder build --win portable
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          
-      - name: Extract Release Version
-        id: extract_version
-        run: echo ::set-output name=version::$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
-        shell: bash
+
+      - name: Build Electron App for macOS
+        if: matrix.os == 'macos-12'
+        run: npm run electron-builder build --mac
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: List build directory
+        run: ls -l ./dist
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/heads/releases/')
@@ -50,15 +55,6 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload macOS Asset
-        if: matrix.os == 'macos-12'
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/TimeTrack.dmg
-          asset_name: TimeTrack.dmg
-          asset_content_type: application/x-dmg
-
       - name: Upload Windows Asset
         if: matrix.os == 'windows-latest'
         uses: actions/upload-release-asset@v1
@@ -67,3 +63,12 @@ jobs:
           asset_path: ./dist/TimeTrack.exe
           asset_name: TimeTrack.exe
           asset_content_type: application/vnd.microsoft.portable-executable
+
+      - name: Upload macOS Asset
+        if: matrix.os == 'macos-12'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/TimeTrack.dmg
+          asset_name: TimeTrack.dmg
+          asset_content_type: application/x-dmg
