@@ -38,6 +38,7 @@ jobs:
       - name: Extract Branch Name
         id: extract_branch
         run: echo ::set-output name=version::$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
+        shell: bash
         
       - name: Print GITHUB_REF
         run: 'echo "GITHUB_REF: $GITHUB_REF"'
@@ -48,6 +49,7 @@ jobs:
           VERSION=$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
           echo "Extracted Version: $VERSION"
           echo ::set-output name=version::$VERSION
+        shell: bash
 
       - name: Print Extracted Version
         run: 'echo "Extracted Version: ${{ steps.extract_version.outputs.version }}"'
