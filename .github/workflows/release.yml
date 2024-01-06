@@ -40,8 +40,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: List build directory
-        run: ls -l ./dist
+      - name: Extract Release Version
+        if: startsWith(github.ref, 'refs/heads/releases/')
+        id: extract_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/heads/releases/}
+        shell: bash
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/heads/releases/')
@@ -51,7 +54,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           tag_name: ${{ steps.extract_version.outputs.version }}
-          release_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Release ${{ steps.extract_version.outputs.version }}
           draft: false
           prerelease: false
 
