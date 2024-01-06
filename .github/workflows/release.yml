@@ -40,7 +40,7 @@ jobs:
         run: echo ::set-output name=version::$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
         
       - name: Print GITHUB_REF
-        run: echo "GITHUB_REF: $GITHUB_REF"
+        run: 'echo "GITHUB_REF: $GITHUB_REF"'
 
       - name: Extract Release Version
         id: extract_version
@@ -50,7 +50,7 @@ jobs:
           echo ::set-output name=version::$VERSION
 
       - name: Print Extracted Version
-        run: echo "Extracted Version: ${{ steps.extract_version.outputs.version }}"
+        run: 'echo "Extracted Version: ${{ steps.extract_version.outputs.version }}"'
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/heads/releases/')
