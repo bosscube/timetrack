@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
+    "dist": "electron-builder build --win portable && electron-builder build --mac",
     "win-portable": "electron-builder build --win portable",
     "mac": "electron-builder build --mac"
   },
@@ -21,6 +21,7 @@
     },
     "win": {
       "target": "nsis",
+      "artifactName": "timetrack.exe",
       "icon": "images/icon.ico"
     }
   },
