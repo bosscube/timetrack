@@ -61,17 +61,21 @@ jobs:
       - name: Upload Windows Asset
         if: matrix.os == 'windows-latest'
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/TimeTrack.exe
-          asset_name: TimeTrack.exe
+          asset_path: ./dist/timetrack.exe
+          asset_name: timetrack.exe
           asset_content_type: application/vnd.microsoft.portable-executable
 
       - name: Upload macOS Asset
         if: matrix.os == 'macos-12'
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/TimeTrack.dmg
-          asset_name: TimeTrack.dmg
+          asset_path: ./dist/timetrack.dmg
+          asset_name: timetrack.dmg
           asset_content_type: application/x-dmg
