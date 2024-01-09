@@ -5,7 +5,30 @@ on:
       - releases/*
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/releases/')
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Extract Release Version
+        id: extract_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/heads/releases/}
+        shell: bash
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Release ${{ steps.extract_version.outputs.version }}
+          draft: false
+          prerelease: false
+          
   build:
+    needs: create-release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -40,31 +63,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Extract Release Version
-        if: startsWith(github.ref, 'refs/heads/releases/')
-        id: extract_version
-        run: echo ::set-output name=version::${GITHUB_REF#refs/heads/releases/}
-        shell: bash
-
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/heads/releases/')
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          tag_name: ${{ steps.extract_version.outputs.version }}
-          release_name: Release ${{ steps.extract_version.outputs.version }}
-          draft: false
-          prerelease: false
-
       - name: Upload Windows Asset
         if: matrix.os == 'windows-latest'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ./dist/timetrack.exe
           asset_name: timetrack.exe
           asset_content_type: application/vnd.microsoft.portable-executable
@@ -75,7 +80,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ./dist/timetrack.dmg
           asset_name: timetrack.dmg
           asset_content_type: application/x-dmg
