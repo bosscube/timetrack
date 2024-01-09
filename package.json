@@ -16,6 +16,7 @@
     "appId": "com.bosscube.timetrack",
     "mac": {
       "target": "dmg",
+      "artifactName": "timetrack.dmg",
       "category": "public.app-category.productivity",
       "icon": "images/icon.icns"
     },
