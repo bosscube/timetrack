@@ -5,8 +5,59 @@ on:
       - releases/*
 
 jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/releases/')
+    outputs:
+      release_exists: ${{ steps.check_release.outputs.release_exists }}
+    steps:
+      - name: Extract Release Version
+        id: extract_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/heads/releases/}
+        shell: bash
+
+      - name: Check if Release Exists
+        id: check_release
+        run: |
+          RELEASE_URL=https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.extract_version.outputs.version }}
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $RELEASE_URL)
+          if [ "$RESPONSE" -ne 404 ]; then
+            echo "Release already exists. Please increment the release version."
+            echo ::set-output name=release_exists::true
+            exit 1
+          else
+            echo ::set-output name=release_exists::false
+          fi
+        shell: bash
+        
+  create-release:
+    needs: check-release
+    runs-on: ubuntu-latest
+    if: >
+      startsWith(github.ref, 'refs/heads/releases/') && 
+      needs.check-release.outputs.release_exists == 'false'
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Extract Release Version
+        id: extract_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/heads/releases/}
+        shell: bash
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Release ${{ steps.extract_version.outputs.version }}
+          draft: false
+          prerelease: false
+          
   build:
-    runs-on: ${{matrix.os}}
+    needs: create-release
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, macos-12]
@@ -26,33 +77,38 @@ jobs:
           python-version: '3.9'
   
       - name: Install Dependencies
-        run: |
-          npm install
-          
-      - name: Build Electron App
-        run: |
-          npm run dist
-        env:
-          GH_TOKEN: ${{secrets.GH_TOKEN}}
+        run: npm install
 
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/heads/releases/')
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Build Electron App for Windows
+        if: matrix.os == 'windows-latest'
+        run: npm run win-portable
         env:
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
-        with:
-          tag_name: ${{github.ref}}
-          release_name: ${{github.ref}}
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Upload Release
+      - name: Build Electron App for macOS
+        if: matrix.os == 'macos-12'
+        run: npm run mac
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Upload Windows Asset
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          upload_url: ${{steps.create_release.outputs.upload_url}}
-          asset_path: ./dist/TimeTrack.dmg
-          asset_name: TimeTrack.dmg
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./dist/timetrack.exe
+          asset_name: timetrack.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+
+      - name: Upload macOS Asset
+        if: matrix.os == 'macos-12'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./dist/timetrack.dmg
+          asset_name: timetrack.dmg
           asset_content_type: application/x-dmg

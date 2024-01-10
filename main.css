@@ -8,15 +8,17 @@ li { position: relative; }
 fieldset { border: 1px solid #ccc; }
 
 .active-time:empty:after { content: '—'; }
-li .content { transition: all 200ms ease; }
-.group .content:has(label:hover), .group .controls:hover + .content { margin-left: 24px; } 
-.instances li:hover .content { margin-left: 24px; }
-.controls { width: 0; height: 16px; position: relative; top: 20px; overflow: hidden; transition: all 200ms ease; }
-.group .controls:has(+ .content label:hover), .group .controls:hover { width: 24px; } 
-.instances li:hover .controls { width: 24px; }
-.controls button { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; background: #f00; border: 1px solid red; border-radius: 100%; font-size: 1rem; line-height: 16px; color: #fff; margin: 0; padding: 0; width: 16px; height: 16px; cursor: pointer; }
+li .content { height: 100%; margin: 12px 0 0 8px; transition: all 200ms ease; }
+.group .content:has(label:hover), .group > .controls:hover + .content, .group > .controls:hover .content { margin-left: 30px; } 
+.instances li:hover .content { margin-left: 30px; }
+.controls { display: inline-block; width: 0; height: 100%; position: absolute; left: 0; top: 0; bottom: 0; right: 0; overflow: hidden; transition: all 200ms ease; }
+.group .controls:has(+ .content label:hover), .group .controls:hover { width: 42px; }
+.group.expanded:has(.content label:hover) > .instances, .group.expanded > .controls:hover ~ .instances { margin-left: 34px; }
+.instances li:hover .controls { width: 32px; }
+.controls button { position: absolute; top: calc(50% - 8px); left: calc(50% - 8px); right: 0; bottom: 0; width: 100%; height: 100%; background: #f00; border: 1px solid red; border-radius: 100%; font-size: 1rem; line-height: 16px; color: #fff; margin: 0; padding: 0; width: 16px; height: 16px; cursor: pointer; }
 .group label { display: block; cursor: pointer; }
-.group .instances { display: none; }
+.group .instances { display: none; margin-left: 18px; transition: all 200ms ease; }
+.group .instances > li { margin: 4px 0; border-left: 6px solid #eee; }
 .group.expanded .instances { display: block; }
 .group-count:before { content: '('; }
 .group-count:after { content: ')'; }

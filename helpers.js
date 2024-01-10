@@ -98,6 +98,8 @@ exports.serializeForm = form => [].slice.call(form.elements).reduce((result, ele
     return result;
 }, {});
 
+exports.slug = id => String(id).toLowerCase().replace(/[^\w-]+/g, '-').replace(/\-+/g, '-').replace(/^\-|\-$/g, '');
+
 exports.toast = (message, options) => {
     const $notifyContainer = document.getElementById('notification-container');
     const $notifyElement = document.getElementById('notification');

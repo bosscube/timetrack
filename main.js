@@ -5,9 +5,18 @@ const windows = {};
 
 const INVALID_WINDOW_PATTERN = /(^https?:\/\/|^[a-z0-9.]+\.com|^TimeTrack$)/;
 
+// Regex keys
 const windowIdTransforms = {
-  'Visual Studio Code': activeWindow => `${activeWindow.owner.name} - ${activeWindow.title.replaceAll('● ', '')}`
+  'Visual Studio Code': activeWindow => {
+    const title = activeWindow.title.replace(/^\s*[^\w]+/i, '');
+
+    activeWindow.title = title;
+
+    return `${activeWindow.owner.name} - ${title}`;
+  }
 };
+
+const slug = id => String(id).toLowerCase().replace(/[^\w-]+/g, '-').replace(/\-+/g, '-').replace(/^\-|\-$/g, '');
 
 let win;
 let activeWindowId;
@@ -33,16 +42,24 @@ function createWindow () {
 async function logActiveWindow() {
   try {
     const activeWin = await getActiveWindow();
+
     if (!activeWin) return;
 
-    const { title, owner } = activeWin;
+    let { title, owner } = activeWin;
     const { name, path: filePath, processId } = owner;
     const now = Date.now();
 
-    if (INVALID_WINDOW_PATTERN.test(title)) return;
+    // Window doesn't qualify but we can still process updates
+    if (INVALID_WINDOW_PATTERN.test(title)) {
+      win.webContents.send('update-windows', windows);
+      return;
+    }
 
-    let id = (windowIdTransforms[name] ? windowIdTransforms[name](activeWin) : `${name} - ${title}`).toLowerCase().replace(/[^\w-]+/g, '-');
-    let activeWindow;
+    const transformKey = windowIdTransforms[name] ? name : Object.keys(windowIdTransforms).find(key => new RegExp(key).test(name));
+    const id = slug(transformKey && windowIdTransforms[transformKey] ? windowIdTransforms[transformKey](activeWin) : `${name} - ${title}`);
+
+    // Update in case of changes in the transform
+    ({ title } = activeWin);
 
     if (!windows[id]) {
       const icon = await app.getFileIcon(filePath);
@@ -50,7 +67,7 @@ async function logActiveWindow() {
       windows[id] = { id, title, process: name, processId, filePath, icon: (icon && icon.toDataURL()) || '', startTime: now, activeTime: 0, lastActive: now };
     }
 
-    if (!activeWindow) activeWindow = windows[id];
+    const activeWindow = windows[id];
 
     if (id === activeWindowId) {
       activeWindow.activeTime += now - activeWindow.lastActive;
@@ -68,7 +85,7 @@ async function logActiveWindow() {
 
     win.webContents.send('update-windows', windows);
   } catch (error) {
-    console.error('Error fetching active window:', error);
+    console.log('Error fetching active window:', error);
   }
 }
 
