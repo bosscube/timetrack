@@ -5,8 +5,31 @@ on:
       - releases/*
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/heads/releases/')
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Extract Release Version
+        id: extract_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/heads/releases/}
+        shell: bash
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Release ${{ steps.extract_version.outputs.version }}
+          draft: false
+          prerelease: false
+          
   build:
-    runs-on: ${{matrix.os}}
+    needs: create-release
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, macos-12]
@@ -26,52 +49,38 @@ jobs:
           python-version: '3.9'
   
       - name: Install Dependencies
-        run: |
-          npm install
-          
-      - name: Build Electron App
-        run: |
-          npm run dist
+        run: npm install
+
+      - name: Build Electron App for Windows
+        if: matrix.os == 'windows-latest'
+        run: npm run win-portable
         env:
-          GH_TOKEN: ${{secrets.GH_TOKEN}}
-          
-      - name: Extract Branch Name
-        id: extract_branch
-        run: echo ::set-output name=version::$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
-        shell: bash
-        
-      - name: Print GITHUB_REF
-        run: 'echo "GITHUB_REF: $GITHUB_REF"'
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Extract Release Version
-        id: extract_version
-        run: |
-          VERSION=$(echo $GITHUB_REF | sed 's/refs\/heads\/releases\///')
-          echo "Extracted Version: $VERSION"
-          echo ::set-output name=version::$VERSION
-        shell: bash
-
-      - name: Print Extracted Version
-        run: 'echo "Extracted Version: ${{ steps.extract_version.outputs.version }}"'
-
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/heads/releases/')
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Build Electron App for macOS
+        if: matrix.os == 'macos-12'
+        run: npm run mac
         env:
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
-        with:
-          tag_name: ${{ steps.extract_version.outputs.version }}
-          release_name: ${{ steps.extract_version.outputs.version }}
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Upload Release
+      - name: Upload Windows Asset
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
-          upload_url: ${{steps.create_release.outputs.upload_url}}
-          asset_path: ./dist/TimeTrack.dmg
-          asset_name: TimeTrack.dmg
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./dist/timetrack.exe
+          asset_name: timetrack.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
+
+      - name: Upload macOS Asset
+        if: matrix.os == 'macos-12'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./dist/timetrack.dmg
+          asset_name: timetrack.dmg
           asset_content_type: application/x-dmg

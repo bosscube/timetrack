@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
+    "dist": "electron-builder build --win portable && electron-builder build --mac",
     "win-portable": "electron-builder build --win portable",
     "mac": "electron-builder build --mac"
   },
@@ -16,11 +16,13 @@
     "appId": "com.bosscube.timetrack",
     "mac": {
       "target": "dmg",
+      "artifactName": "timetrack.dmg",
       "category": "public.app-category.productivity",
       "icon": "images/icon.icns"
     },
     "win": {
       "target": "nsis",
+      "artifactName": "timetrack.exe",
       "icon": "images/icon.ico"
     }
   },
