@@ -5,9 +5,37 @@ on:
       - releases/*
 
 jobs:
-  create-release:
+  check-release:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/heads/releases/')
+    outputs:
+      release_exists: ${{ steps.check_release.outputs.release_exists }}
+    steps:
+      - name: Extract Release Version
+        id: extract_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/heads/releases/}
+        shell: bash
+
+      - name: Check if Release Exists
+        id: check_release
+        run: |
+          RELEASE_URL=https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.extract_version.outputs.version }}
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $RELEASE_URL)
+          if [ "$RESPONSE" -ne 404 ]; then
+            echo "Release already exists. Please increment the release version."
+            echo ::set-output name=release_exists::true
+            exit 1
+          else
+            echo ::set-output name=release_exists::false
+          fi
+        shell: bash
+        
+  create-release:
+    needs: check-release
+    runs-on: ubuntu-latest
+    if: >
+      startsWith(github.ref, 'refs/heads/releases/') && 
+      needs.check-release.outputs.release_exists == 'false'
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
