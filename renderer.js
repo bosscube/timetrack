@@ -81,13 +81,20 @@
 
         if (!windowsEl.innerText) {
             // Initial render
-            const output = Object.entries(grouped).map(([process, items]) => {
+            const output = [`
+                <li class="group totals">
+                    <div class="content">
+                        <span>Totals:</span>
+                        <span id="group-totals"></span>
+                    </div>
+                </li>
+            `].concat(Object.entries(grouped).map(([process, items]) => {
                 const processSlug = slug(process);
 
                 return `<li id="group-${processSlug}" class="group"><div class="controls"><button class="remove">&times;</button></div><div class="content"><label for="group-${processSlug}"><img src="${items[0].icon || './images/icon-default.png'}" class="icon">${process} <span id="group-${processSlug}-count" class="group-count">${items.length}</span><span id="group-${processSlug}-total" class="group-total"></span></label></div><ul class="instances">` + items.map(data => {
                     return `<li id="${data.id}" data-group-id="group-${processSlug}"><div class="controls"><button class="remove">&times;</button></div><div class="content">${data.title}: <span class="active-time">${formatTime(data.activeTime).shortFormat}</span></div></li>`;
                 }).join('\n') + '</ul></li>';
-            });
+            }));
 
             windowsEl.innerHTML = output.join('\n');
         } else {
@@ -103,6 +110,8 @@
 
             // Remove empty groups
             $$('.group', windowsEl).forEach(item => {
+                if (item.classList.contains('totals')) return;
+
                 if (!$$(`li[data-group-id="${item.id}"]`, windowsEl).length) {
                     item.remove();
                 }
@@ -149,5 +158,7 @@
                 }
             });
         }
+
+        // Total time
     });
 })();

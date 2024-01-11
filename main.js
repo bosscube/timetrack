@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+const { slug } = require('./helpers.js');
 const path = require('path');
 const getActiveWindow = require('active-win');
 const windows = {};
@@ -16,7 +17,7 @@ const windowIdTransforms = {
   }
 };
 
-const slug = id => String(id).toLowerCase().replace(/[^\w-]+/g, '-').replace(/\-+/g, '-').replace(/^\-|\-$/g, '');
+//const slug = id => String(id).toLowerCase().replace(/[^\w-]+/g, '-').replace(/\-+/g, '-').replace(/^\-|\-$/g, '');
 
 let win;
 let activeWindowId;
