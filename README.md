@@ -4,9 +4,13 @@ TimeTrack is a simple and efficient time tracking application that helps you kee
 ## Features
 
 ✅ Track time spent in any application
+
 ✅ Track time spent in each individual application instance (E.g. Chrome tabs)
+
 ✅ Lightweight and user-friendly interface
+
 ☑️ Various settings to customize your tracking options
+
 ☑️ Save and look back on tracking
 
 ## Getting Started
