@@ -1,6 +1,7 @@
 @import 'fonts.css';
 
 * { box-sizing: border-box; user-select: none; }
+[hidden] { display: none; }
 html, body { font-family: 'Open Sans'; font-size: 18px; color: #222; }
 h1, h2, h3, h4 { margin: 0; padding: 0; }
 ul, li { margin: 0; padding: 0; list-style-type: none; }
@@ -8,6 +9,7 @@ li { position: relative; }
 fieldset { border: 1px solid #ccc; }
 
 .active-time:empty:after { content: '—'; }
+.group.totals { padding: 0 8px 12px; }
 li .content { height: 100%; margin: 12px 0 0 8px; transition: all 200ms ease; }
 .group .content:has(label:hover), .group > .controls:hover + .content, .group > .controls:hover .content { margin-left: 30px; } 
 .instances li:hover .content { margin-left: 30px; }
@@ -30,7 +32,7 @@ li .content { height: 100%; margin: 12px 0 0 8px; transition: all 200ms ease; }
 .flex { display: flex; }
 
 #open-settings { position: absolute; top: 16px; right: 8px; padding: 2px 4px; color: #999; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0px; z-index: 3; cursor: pointer; border: 1px solid #ccc; background: #eee; border-radius: 3px; }
-#windows:empty:after { content: 'Start working 😊'; position: absolute; top: 50%; left: 0; right: 0; width: 100%; text-align: center; transform: translateY(-50%); font-size: 4rem; color: #ccc; }
+#windows:empty:after { content: 'Get to work 😊'; position: absolute; top: 50%; left: 0; right: 0; width: 100%; text-align: center; transform: translateY(-50%); font-size: 4rem; color: #ccc; }
 #windows > li { padding: 0 8px 12px; border-top: 1px solid #eee; }
 #windows > li:last-child { border-bottom: 1px solid #eee; }
 #windows .icon { width: 24px; height: 24px; margin-right: 8px; vertical-align: middle; }

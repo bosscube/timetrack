@@ -18,12 +18,12 @@
       "target": "dmg",
       "artifactName": "timetrack.dmg",
       "category": "public.app-category.productivity",
-      "icon": "images/icon.icns"
+      "icon": "timetrack.icns"
     },
     "win": {
       "target": "nsis",
       "artifactName": "timetrack.exe",
-      "icon": "images/icon.ico"
+      "icon": "timetrack.ico"
     }
   },
   "dependencies": {

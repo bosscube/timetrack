@@ -1,10 +1,15 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const { slug } = require('./helpers.js');
+const { loadSettings, saveSettings, slug } = require('./helpers.js');
+const fs = require('fs');
 const path = require('path');
 const getActiveWindow = require('active-win');
-const windows = {};
+const swapFilePath = './swap.file';
+const settingsFilePath = './settings.json';
 
 const INVALID_WINDOW_PATTERN = /(^https?:\/\/|^[a-z0-9.]+\.com|^TimeTrack$)/;
+
+// Window cache
+let windows = {};
 
 // Regex keys
 const windowIdTransforms = {
@@ -17,16 +22,28 @@ const windowIdTransforms = {
   }
 };
 
-//const slug = id => String(id).toLowerCase().replace(/[^\w-]+/g, '-').replace(/\-+/g, '-').replace(/^\-|\-$/g, '');
-
 let win;
 let activeWindowId;
-let settings;
+let settings = {};
 
 function createWindow () {
+  try {
+    const swapData = fs.readFileSync(swapFilePath);
+    const now = new Date();
+    const swapJSON = JSON.parse(swapData);
+    const swapDate = new Date(swapJSON.stamp);
+
+    if (now.toLocaleDateString() === swapDate.toLocaleDateString()) {
+      windows = JSON.parse(swapData).windows;
+    }
+  } catch(e) {
+    console.error('Failed to load swap:', e.stack);
+  }
+
   win = new BrowserWindow({
     width: 800,
     height: 600,
+    icon: './timetrack.png',
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: true,
@@ -34,8 +51,18 @@ function createWindow () {
     }
   });
 
+  try {
+    const settingsData = fs.readFileSync(settingsFilePath);
+    
+    settings = JSON.parse(settingsData);
+  } catch(e) {
+    settings = {};
+    console.error('Failed to load settings:', e.stack);
+  }
+
   //win.setMenu(null);
   win.loadFile('index.html');
+  win.webContents.send('receive-settings', settings);
 
   setInterval(logActiveWindow, 250);
 }
@@ -94,8 +121,14 @@ ipcMain.on('delete-window', (e, windowId) => {
   delete windows[windowId];
 });
 
-ipcMain.on('update-settings', (e, newSettings) => {
+ipcMain.on('save-settings', (e, newSettings) => {
   settings = newSettings;
+
+  fs.writeFileSync(settingsFilePath, JSON.stringify(settings));
+});
+
+app.on('before-quit', () => {
+  fs.writeFileSync(swapFilePath, JSON.stringify({ stamp: Date.now(), windows }));
 });
 
 app.whenReady().then(createWindow);
