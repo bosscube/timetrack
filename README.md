@@ -14,8 +14,12 @@ TimeTrack is a simple and efficient time tracking application that helps you kee
 ☑️ Save and look back on tracking
 
 ## Getting Started
+### Download
+Download a Windows or Mac binary from https://github.com/bosscube/timetrack/releases/
 
-Follow these steps to get TimeTrack up and running:
+---
+
+### Build From Source
 
 1. Clone the repository:
 
